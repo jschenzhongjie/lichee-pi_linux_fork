@@ -341,6 +341,15 @@
 			interrupt-controller;
 			#interrupt-cells = <3>;
 
+			pwm0_pins: pwm0 {
+				pins = "PB4";
+				function = "pwm0";
+			};
+			pwm1_pins: pwm1 {
+				pins = "PB5";
+				function = "pwm1";
+			};
+
 			i2c0_pins: i2c0 {
 				pins = "PB6", "PB7";
 				function = "i2c0";
