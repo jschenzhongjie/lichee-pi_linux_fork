@@ -79,6 +79,8 @@ struct sun4i_lradc_data {
 	u32 vref;
 };
 
+// static struct device *lradc_dev;
+
 static irqreturn_t sun4i_lradc_irq(int irq, void *dev_id)
 {
 	struct sun4i_lradc_data *lradc = dev_id;
@@ -100,22 +102,28 @@ static irqreturn_t sun4i_lradc_irq(int irq, void *dev_id)
 		val = readl(lradc->base + LRADC_DATA0) & 0x3f;
 		voltage = val * lradc->vref / 63;
 
+		// dev_err(lradc_dev, "Debug: a %u V button pressed\n", voltage);
+		// dev_err(lradc_dev, "lradc->chan0_map_count %d\n", lradc->chan0_map_count);
 		for (i = 0; i < lradc->chan0_map_count; i++) {
 			diff = abs(lradc->chan0_map[i].voltage - voltage);
+			// dev_err(lradc_dev, "value comp %d %d %d\n", diff , closest, i);
 			if (diff < closest) {
+				// dev_err(lradc_dev, "entry i %d\n", i);
 				closest = diff;
 				keycode = lradc->chan0_map[i].keycode;
 			}
 		}
 
 		lradc->chan0_keycode = keycode;
+		// dev_err(lradc_dev, "lradc->chan0_keycode %x\n", lradc->chan0_keycode);
 		input_report_key(lradc->input, lradc->chan0_keycode, 1);
 	}
 
+	// dev_err(lradc_dev, "sync start\n");
 	input_sync(lradc->input);
 
 	writel(ints, lradc->base + LRADC_INTS);
-
+	// dev_err(lradc_dev, "sync end\n");
 	return IRQ_HANDLED;
 }
 
@@ -214,6 +222,9 @@ static int sun4i_lradc_probe(struct platform_device *pdev)
 	int i;
 	int error;
 
+	// dev_err(dev, "sun4i_lradc_probe entry %d\n", __LINE__);
+	// lradc_dev = &pdev->dev;
+	
 	lradc = devm_kzalloc(dev, sizeof(struct sun4i_lradc_data), GFP_KERNEL);
 	if (!lradc)
 		return -ENOMEM;
@@ -232,6 +243,7 @@ static int sun4i_lradc_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	lradc->input->name = pdev->name;
+	// dev_err(lradc_dev, "lradc->input->name: %s\n", lradc->input->name);
 	lradc->input->phys = "sun4i_lradc/input0";
 	lradc->input->open = sun4i_lradc_open;
 	lradc->input->close = sun4i_lradc_close;

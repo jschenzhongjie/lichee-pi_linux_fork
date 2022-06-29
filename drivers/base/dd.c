@@ -760,7 +760,10 @@ static int __driver_attach(struct device *dev, void *data)
 		device_lock(dev->parent);
 	device_lock(dev);
 	if (!dev->driver)
+	{
+		// dev_err(dev, "test probe: %s", drv->name);
 		driver_probe_device(drv, dev);
+	}	
 	device_unlock(dev);
 	if (dev->parent)
 		device_unlock(dev->parent);
